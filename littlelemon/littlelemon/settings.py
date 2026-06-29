@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'restaurant',
 ]
 
 MIDDLEWARE = [
@@ -54,13 +55,14 @@ ROOT_URLCONF = 'littlelemon.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.debug', # FOR FUTURE ME: REMOVE IT IN PRODUCTION :)
             ],
         },
     },
@@ -72,11 +74,23 @@ WSGI_APPLICATION = 'littlelemon.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+ 'default': {
+ 'ENGINE': 'django.db.backends.mysql',
+ 'NAME': 'LittleLemon',
+ 'USER': 'root',
+ 'PASSWORD': os.getenv('DB_PASSWORD'),
+ 'HOST': '127.0.0.1',
+ 'PORT': '3306',
+ 'OPTIONS': {
+ 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+ }
+ }
 }
 
 
@@ -115,3 +129,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'restaurant' / 'static',
+]
+
+
+

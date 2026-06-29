@@ -1,0 +1,7 @@
+# Ignore these files and folders
+.env
+db.sqlite3
+__pycache__/
+venv/
+*.pyc
+
