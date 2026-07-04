@@ -102,10 +102,3 @@ class OrderItem(models.Model):
 
 
 
-
-
-
-
-
-
-

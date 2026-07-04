@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
 
 <head>
@@ -76,6 +75,7 @@
             padding: 1rem 0;
             border-bottom: 1px solid #e8f5e9;
             transition: background-color 0.2s;
+            flex-wrap: wrap;
         }
 
         .menu-item:hover {
@@ -118,6 +118,66 @@
             top: -4px;
         }
 
+        /* Wraps quantity input + button together on the right side */
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: 1rem;
+        }
+
+        .qty-input {
+            width: 3rem;
+            padding: 0.3rem;
+            text-align: center;
+            border: 1px solid #b7e4c7;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: #1a472a;
+        }
+
+        .qty-input:focus {
+            outline: none;
+            border-color: #2d6a4f;
+        }
+
+        /* Modern circular "+" button */
+        .add-btn {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 50%;
+            border: none;
+            background-color: #2d6a4f;
+            color: white;
+            font-size: 1.3rem;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .add-btn:hover {
+            background-color: #1b4332;
+        }
+
+        .add-btn:active {
+            transform: scale(0.92);
+        }
+
+        .add-btn:disabled {
+            background-color: #95d5b2;
+            cursor: not-allowed;
+        }
+
+        .add-feedback {
+            font-size: 0.8rem;
+            white-space: nowrap;
+            min-width: 3.5rem;
+        }
+
         footer {
             text-align: center;
             padding: 2rem;
@@ -132,12 +192,15 @@
             .menu-item {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 0.3rem;
+                gap: 0.5rem;
             }
             .dots {
                 display: none;
             }
             .item-price {
+                margin-left: 0;
+            }
+            .item-actions {
                 margin-left: 0;
             }
         }
@@ -160,14 +223,14 @@
     <script>
         async function fetchMenu() {
             const container = document.getElementById('menu-container');
-            
+
             try {
                 const response = await fetch('http://127.0.0.1:8000/api/menu');
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                
+
                 const data = await response.json();
                 renderMenu(data, container);
             } catch (err) {
@@ -196,11 +259,11 @@
             }, {});
 
             let html = '';
-            
+
             for (const [category, categoryItems] of Object.entries(grouped)) {
                 html += `<div class="category">
                     <div class="category-title">${escapeHtml(category)}</div>`;
-                
+
                 for (const item of categoryItems) {
                     const itemUrl = `/menu/${item.id}/`;
                     html += `
@@ -210,10 +273,28 @@
                             </span>
                             <span class="dots"></span>
                             <span class="item-price">$${formatPrice(item.price)}</span>
+                            <div class="item-actions">
+                                <input
+                                    type="number"
+                                    class="qty-input"
+                                    min="1"
+                                    step="1"
+                                    value="1"
+                                    data-item-id="${item.id}"
+                                    aria-label="Quantity for ${escapeHtml(item.title)}"
+                                >
+                                <button
+                                    class="add-btn"
+                                    type="button"
+                                    data-item-id="${item.id}"
+                                    aria-label="Add ${escapeHtml(item.title)} to cart"
+                                >+</button>
+                                <span class="add-feedback" data-feedback-for="${item.id}"></span>
+                            </div>
                         </div>
                     `;
                 }
-                
+
                 html += '</div>';
             }
 
@@ -231,12 +312,77 @@
             return isNaN(num) ? price : num.toFixed(2);
         }
 
+        // Reads the auth token, checking both possible localStorage keys
+        function getAuthToken() {
+            return localStorage.getItem('access_token') || localStorage.getItem('access');
+        }
+
+        // Sends the POST request to add an item to the cart
+        async function addToCart(itemId, quantity, buttonEl, feedbackEl) {
+            const token = getAuthToken();
+
+            if (!token) {
+                feedbackEl.textContent = 'Please log in';
+                feedbackEl.style.color = '#c0392b';
+                return;
+            }
+
+            // Disable the button while the request is in flight to prevent double-clicks
+            buttonEl.disabled = true;
+            feedbackEl.textContent = '';
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/cart-items/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        item: itemId,
+                        quantity: quantity
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+
+                feedbackEl.textContent = 'Added!';
+                feedbackEl.style.color = '#2d6a4f';
+            } catch (err) {
+                feedbackEl.textContent = err.message || 'Failed to add';
+                feedbackEl.style.color = '#c0392b';
+            } finally {
+                buttonEl.disabled = false;
+                // Clear the feedback message after a couple seconds
+                setTimeout(() => { feedbackEl.textContent = ''; }, 2000);
+            }
+        }
+
+        // Event delegation: one listener handles clicks on any "+" button,
+        // including ones rendered dynamically after this listener is attached.
+        document.getElementById('menu-container').addEventListener('click', (event) => {
+            const button = event.target.closest('.add-btn');
+            if (!button) return; // click wasn't on a "+" button
+
+            const itemId = parseInt(button.dataset.itemId, 10);
+            const qtyInput = document.querySelector(`.qty-input[data-item-id="${itemId}"]`);
+            const feedbackEl = document.querySelector(`.add-feedback[data-feedback-for="${itemId}"]`);
+
+            let quantity = parseInt(qtyInput.value, 10);
+            if (isNaN(quantity) || quantity < 1) {
+                quantity = 1;
+                qtyInput.value = 1;
+            }
+
+            addToCart(itemId, quantity, button, feedbackEl);
+        });
+
         // Load on page load
         fetchMenu();
     </script>
 </body>
-
-
-
 
 {% endblock %}

@@ -24,9 +24,9 @@ urlpatterns = [
 
     path('members/', views.members_page, name='members'),
 
+    path('order-confirmation/', views.order_confirmation_page, name='members'),
 
-
-
+    path('book-table/', views.book_table_page, name='members'),
 
 
     path('about/', views.about_page, name='abou'),

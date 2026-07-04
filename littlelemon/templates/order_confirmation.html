@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  /* ==================== PAGE LAYOUT ====================
+     Full-height green wash with the card centered both
+     horizontally and vertically using flexbox. */
+  .basket-page {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(180deg, #f2f7ee 0%, #e9f2e3 100%);
+  }
+
+  /* ==================== FLOATING CARD ====================
+     White card, soft green-tinted shadow so it feels like
+     it's lifted off the page rather than just boxed in. */
+  .basket-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(75, 107, 51, 0.18),
+                0 4px 12px rgba(75, 107, 51, 0.08);
+    overflow: hidden;
+    animation: floatIn 0.5s ease;
+  }
+
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ==================== CARD HEADER ====================
+     Solid green banner with a basket icon, echoing the
+     nav's basket button so the flow feels connected. */
+  .basket-header {
+    background: #4B6B33;
+    color: #ffffff;
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .basket-header svg {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+
+  .basket-header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+
+  .basket-header p {
+    margin: 0.15rem 0 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* ==================== ITEM LIST ====================
+     Each row is its own flex line: name on the left,
+     a pill badge with the quantity on the right. */
+  .basket-items {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+  }
+
+  .basket-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 1.75rem;
+    border-bottom: 1px solid #eef3ea;
+    animation: fadeInRow 0.4s ease both;
+  }
+
+  .basket-item:last-child {
+    border-bottom: none;
+  }
+
+  .item-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Small dot marker instead of a generic bullet -
+     keeps the row quiet while still giving structure. */
+  .item-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4B6B33;
+    flex-shrink: 0;
+  }
+
+  .item-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+
+  .item-qty {
+    background: #eaf3e3;
+    color: #4B6B33;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    min-width: 2.2rem;
+    text-align: center;
+  }
+
+  @keyframes fadeInRow {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ==================== STATE MESSAGES ====================
+     Shared styling for loading / empty / error states so
+     the card never looks broken while data is in flight. */
+  .basket-state {
+    padding: 2.5rem 1.75rem;
+    text-align: center;
+    color: #6b7a63;
+    font-size: 0.95rem;
+  }
+
+  .basket-state.error {
+    color: #b3441e;
+  }
+
+  .spinner {
+    width: 28px;
+    height: 28px;
+    margin: 0 auto 0.9rem;
+    border: 3px solid #eaf3e3;
+    border-top-color: #4B6B33;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ==================== FOOTER ====================
+     Simple total-items summary anchored to the bottom
+     of the card, only shown once items have loaded. */
+  .basket-footer {
+    padding: 1rem 1.75rem 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #6b7a63;
+    border-top: 1px solid #eef3ea;
+  }
+</style>
+
+<div class="basket-page">
+  <div class="basket-card">
+
+    <!-- ==================== HEADER ====================
+         Static markup; icon reuses the same basket path
+         used in the nav button for visual consistency. -->
+    <div class="basket-header">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 9l1.5-4.5A2 2 0 016.4 3h11.2a2 2 0 011.9 1.5L21 9M3 9h18M3 9l1 9.5A2 2 0 006 20.5h12a2 2 0 002-2.5L21 9M9 12v3m6-3v3">
+        </path>
+      </svg>
+      <div>
+        <h1>Your Basket</h1>
+        <p>Items ready for checkout</p>
+      </div>
+    </div>
+
+    <!-- ==================== DYNAMIC CONTENT ====================
+         Everything below this line is replaced by JS once
+         the fetch resolves: loading -> items or empty/error. -->
+    <div id="basketContent">
+      <div class="basket-state">
+        <div class="spinner"></div>
+        Loading your basket...
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ==================== FETCH CART ITEMS ====================
+  // Pulls the JWT from either key so it matches whichever
+  // login flow set it (access_token vs access).
+  async function loadBasket() {
+    const contentEl = document.getElementById('basketContent');
+    const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
+
+    // No token -> nothing to authenticate with, so show a
+    // clear message instead of letting the fetch fail silently.
+    if (!accessToken) {
+      contentEl.innerHTML = `
+        <div class="basket-state error">
+          You need to be logged in to view your basket.
+        </div>`;
+      return;
+    }
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/cart-items/', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // 'JWT' prefix matches SimpleJWT configured with JWT_AUTH_HEADER_PREFIX.
+          // Switch back to 'Bearer' if your backend uses the default scheme.
+          'Authorization': 'JWT ' + accessToken
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const items = await response.json();
+      renderBasket(items);
+
+    } catch (error) {
+      console.error('Failed to load basket:', error);
+      contentEl.innerHTML = `
+        <div class="basket-state error">
+          Couldn't load your basket. Please try again.
+        </div>`;
+    }
+  }
+
+  // ==================== RENDER ITEMS ====================
+  // Builds the <ul> of items plus a footer summary, or an
+  // empty-state message when the basket has nothing in it.
+  function renderBasket(items) {
+    const contentEl = document.getElementById('basketContent');
+
+    if (!items || items.length === 0) {
+      contentEl.innerHTML = `
+        <div class="basket-state">
+          Your basket is empty.
+        </div>`;
+      return;
+    }
+
+    // Build each row; a staggered animation delay makes the
+    // list feel intentional rather than dumped in all at once.
+    const rows = items.map((item, index) => `
+      <li class="basket-item" style="animation-delay: ${index * 0.06}s">
+        <div class="item-info">
+          <span class="item-dot"></span>
+          <span class="item-name">${item.item_name}</span>
+        </div>
+        <span class="item-qty">${item.quantity}</span>
+      </li>
+    `).join('');
+
+    const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+
+    contentEl.innerHTML = `
+      <ul class="basket-items">${rows}</ul>
+      <div class="basket-footer">${totalItems} item${totalItems !== 1 ? 's' : ''} in your basket</div>
+    `;
+  }
+
+  // ==================== INITIALIZATION ====================
+  loadBasket();
+</script>
+{% endblock %}
+
+
+
+
+
+
+

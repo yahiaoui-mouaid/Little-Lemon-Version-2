@@ -10,18 +10,15 @@ router.register(r'tables', views.BookingViewSet)
 router.register(r'menu', views.MenuView)
 router.register(r'categories', views.CategoryView)
 
+router.register(r'category-names', views.CategoryNameView, basename='category-names')
 
-router.register(r'carts', views.CartViewSet)
 router.register(r'cart-items', views.CartItemViewSet)
 
-
 router.register(r'orders', views.OrderViewSet)
-router.register(r'order-items', views.OrderItemViewSet)
-
 
 router.register(r'members-data', views.MembersDataAPI)
 
-
+ 
 
 
 urlpatterns = [

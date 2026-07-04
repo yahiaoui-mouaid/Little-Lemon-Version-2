@@ -1,9 +1,10 @@
 from django.shortcuts import render
-from .serializers import BookingSerializer, MenuSerializer, CartSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer, UserRoleSerializer, CategorySerializer
+from .serializers import BookingSerializer, MenuSerializer, CartItemSerializer, OrderSerializer, UserRoleSerializer, CategorySerializer, CategoryNameSerializer
 from .models import Booking, MenuItems, Cart, CartItem, Order, OrderItem, CustomUser, Category
 from rest_framework import viewsets
 from .permissions import HasRequiredRole, IsManagerOnly
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListAPIView
 
 
 
@@ -24,7 +25,8 @@ def logout_page(request):
 def about_page(request):
     return render(request, 'about.html')
 
-
+def book_table_page(request):
+    return render(request, 'book_table.html')
 
 def menu_page(request):
     return render(request, 'menu.html')
@@ -45,11 +47,21 @@ def members_page(request):
     return render(request, 'members.html')
 
 
+def order_confirmation_page(request):
+    return render(request, 'order_confirmation.html')
+
+
+
+
+
+
+
+
+
+
+
 
  # because of DefaultRouter i don't need to create another view for single item view " he creates it for me :) "
-
-
-
 
 
 class MembersDataAPI(viewsets.ModelViewSet):
@@ -89,17 +101,22 @@ class BookingViewSet(viewsets.ModelViewSet):
     
 
 
-class CartViewSet(viewsets.ModelViewSet):
-    queryset = Cart.objects.all()
-    serializer_class = CartSerializer
-
-
-
 class CartItemViewSet(viewsets.ModelViewSet):
-    queryset = CartItem.objects.all()
+    queryset = CartItem.objects.all()  
     serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
 
- 
+    def get_queryset(self):
+        # only ever return cart items that belong to THIS logged-in user's cart
+        return CartItem.objects.filter(cart__user=self.request.user)
+
+    def perform_create(self, serializer):
+        # find this user's cart, or create one if they've never had a cart before
+        cart, created = Cart.objects.get_or_create(user=self.request.user)
+        # attach it automatically — the client never sends a cart id
+        serializer.save(cart=cart)
+
+
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -107,11 +124,10 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 
 
-class OrderItemViewSet(viewsets.ModelViewSet):
-    queryset = OrderItem.objects.all()
-    serializer_class = OrderItemSerializer
-
-
+# To fetch categories names:
+class CategoryNameView(viewsets.ReadOnlyModelViewSet): 
+    queryset = Category.objects.all()
+    serializer_class = CategoryNameSerializer
 
 
 

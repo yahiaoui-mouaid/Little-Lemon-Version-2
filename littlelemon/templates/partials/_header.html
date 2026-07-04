@@ -97,7 +97,7 @@
       background-color: rgba(0, 0, 0, 0.2);
     }
 
-    /* Theme Toggle */
+    /* Theme Toggle (also reused for the basket button) */
     .theme-toggle {
       background: rgba(255, 255, 255, 0.1);
       border: 2px solid rgba(144, 238, 144, 0.3);
@@ -275,7 +275,18 @@
     <ul class="nav-links" id="navLinks">
       <!-- Links will be injected by JavaScript based on user role -->
       <li style="padding: 1rem; color: var(--nav-text);">Loading...</li>
-      
+
+      <!-- Basket button: sits before the theme toggle, always visible -->
+      <li>
+        <button class="theme-toggle" id="basketBtn" aria-label="View basket">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 9l1.5-4.5A2 2 0 016.4 3h11.2a2 2 0 011.9 1.5L21 9M3 9h18M3 9l1 9.5A2 2 0 006 20.5h12a2 2 0 002-2.5L21 9M9 12v3m6-3v3">
+            </path>
+          </svg>
+        </button>
+      </li>
+
       <li>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
           <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,9 +301,6 @@
   </nav>
 
   <script>
-
-
-
 
 // ==================== CONFIGURATION ====================
     const API_BASE_URL = ''; // Set to your API base, e.g., 'http://127.0.0.1:8000'
@@ -323,6 +331,12 @@
       const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
       html.setAttribute('data-theme', newTheme);
       localStorage.setItem('theme', newTheme);
+    });
+
+    // ==================== BASKET BUTTON ====================
+    // Navigates to the order confirmation page when clicked.
+    document.getElementById('basketBtn').addEventListener('click', () => {
+      window.location.href = '/order-confirmation';
     });
 
     // ==================== MOBILE HAMBURGER ====================
@@ -390,17 +404,19 @@
       // Filter links based on role
       const visibleLinks = ALL_LINKS.filter(link => link.roles.includes(userRole));
 
-      // Build HTML (preserve theme toggle at the end)
-      const themeToggleLi = navLinks.querySelector('li:last-child');
-      
+      // Grab the last two static <li> elements (basket button + theme toggle)
+      // before we wipe out navLinks.innerHTML, so we can re-attach them after
+      const persistentLis = Array.from(navLinks.querySelectorAll('li')).slice(-2);
+
       let linksHtml = '';
       visibleLinks.forEach(link => {
         linksHtml += `<li><a href="${link.href}" data-nav-link>${link.label}</a></li>`;
       });
 
-      // Rebuild navLinks
+      // Rebuild navLinks, then re-attach the preserved buttons in their
+      // original order (basket, then theme toggle)
       navLinks.innerHTML = linksHtml;
-      navLinks.appendChild(themeToggleLi);
+      persistentLis.forEach(li => navLinks.appendChild(li));
 
       // Highlight current page
       highlightCurrentPage();

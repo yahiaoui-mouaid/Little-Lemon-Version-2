@@ -76,9 +76,11 @@ class CartSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CartItemSerializer(serializers.ModelSerializer):
+    # 1. Tell the serializer to look inside the 'item' relation and grab the 'name'
+    item_name = serializers.ReadOnlyField(source='item.title')
     class Meta:
         model = CartItem
-        fields = '__all__'
+        fields = ['id', 'item','item_name', 'quantity']
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -89,3 +91,12 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = '__all__'
+
+
+
+class CategoryNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['name'] # Strictly limit the output to the name
+
+
