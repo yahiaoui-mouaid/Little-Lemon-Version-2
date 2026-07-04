@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+    <h1>This Is The Home Page</h1>
+    
+    <!-- Username will be displayed here -->
+    <h2 id="username-display"></h2>
+
+
+    <script>
+        // Read the access token that login.html saved after a successful
+        // /auth/jwt/create/ call. This is stored under the key
+        // 'access_token' (with an underscore) — it has to match exactly,
+        // or localStorage.getItem() just returns null with no error.
+        const accessToken = localStorage.getItem('access_token');
+
+        // Fetch the current user's info from Djoser's "me" endpoint
+        fetch('http://127.0.0.1:8000/auth/users/me/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                // simplejwt expects the "Bearer" scheme, not "Token" —
+                // "Token ..." is the format for DRF's separate
+                // TokenAuthentication class, which you're not using here.
+                // Without this header at all (as in the original), DRF has
+                // no way to know who's asking and returns 401 Unauthorized.
+                'Authorization': 'Bearer ' + accessToken
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Not authenticated');
+            }
+        })
+        .then(data => {
+            const username = data.username;
+            document.getElementById('username-display').textContent = 
+                'This is your name: "' + username + '"';
+        })
+        .catch(error => {
+            document.getElementById('username-display').textContent = 
+                'This is your name: "Guest"';
+        });
+    </script>
+
+
+
+{% endblock %}
+
+
+
+
+

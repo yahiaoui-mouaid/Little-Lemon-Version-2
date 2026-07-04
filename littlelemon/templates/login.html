@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .login-page {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f0fdf4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(22, 163, 74, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-card h1 {
+            color: #15803d;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .login-card .subtitle {
+            color: #86efac;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .login-card .form-group {
+            margin-bottom: 20px;
+        }
+
+        .login-card label {
+            display: block;
+            color: #166534;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #dcfce7;
+            border-radius: 10px;
+            font-size: 15px;
+            color: #14532d;
+            background: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .login-card input::placeholder {
+            color: #86efac;
+        }
+
+        .login-card input:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .login-card button {
+            width: 100%;
+            padding: 14px;
+            background: #16a34a;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 8px;
+        }
+
+        .login-card button:hover {
+            background: #15803d;
+        }
+
+        .login-card button:active {
+            transform: scale(0.98);
+        }
+
+        .login-card .message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .login-card .message.success {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .login-card .message.error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .login-card .signup-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #86efac;
+        }
+
+        .login-card .signup-link a {
+            color: #16a34a;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-card .signup-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+
+<div class="login-page">
+    <div class="login-card">
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Log in to your account</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="john_doe"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="••••••••"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit">Log In</button>
+        </form>
+
+        <div id="message" class="message"></div>
+
+        <div class="signup-link">
+            Don't have an account? <a href="/signup">Sign up</a>
+        </div>
+    </div>
+</div>
+ 
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const messageEl = document.getElementById('message');
+    messageEl.className = 'message';
+    messageEl.textContent = '';
+
+    const credentials = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value
+    };
+
+    fetch('/auth/jwt/create/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(credentials)
+    })
+    .then(async response => {
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (parseErr) {
+            data = null;
+        }
+
+        if (response.ok) {
+            localStorage.setItem('access_token', data.access);
+            localStorage.setItem('refresh_token', data.refresh);
+
+            messageEl.textContent = 'Logged in successfully!';
+            messageEl.classList.add('success');
+            document.getElementById('loginForm').reset();
+
+            window.location.href = '/';
+        } else {
+            let errorText;
+            if (data && data.detail) {
+                errorText = data.detail;
+            } else if (data) {
+                errorText = Object.values(data).flat().join(' ');
+            } else {
+                errorText = `Login failed (status ${response.status}).`;
+            }
+            throw new Error(errorText || 'Login failed');
+        }
+    })
+    .catch(error => {
+        messageEl.textContent = error.message || 'Something went wrong. Please try again.';
+        messageEl.classList.add('error');
+    });
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f5f0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .about-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 50px;
+            margin-top: 30px;
+        }
+
+        .restaurant-name {
+            font-size: 2.5em;
+            color: #2c5f2d;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            text-align: center;
+            color: #97bc62;
+            font-style: italic;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .divider {
+            width: 80px;
+            height: 3px;
+            background-color: #97bc62;
+            margin: 0 auto 30px;
+            border-radius: 2px;
+        }
+
+        .about-text {
+            font-size: 1.15em;
+            line-height: 1.8;
+            color: #555;
+            text-align: justify;
+            margin-bottom: 40px;
+        }
+
+        .contact-section {
+            background-color: #f4f9f0;
+            border-radius: 8px;
+            padding: 25px;
+            border-left: 4px solid #97bc62;
+        }
+
+        .contact-section h3 {
+            color: #2c5f2d;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 1.05em;
+        }
+
+        .contact-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .contact-label {
+            font-weight: bold;
+            color: #2c5f2d;
+            min-width: 80px;
+        }
+
+        .contact-value {
+            color: #555;
+        }
+
+        .contact-value a {
+            color: #2c5f2d;
+            text-decoration: none;
+        }
+
+        .contact-value a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        /* ============================================
+   TOGGLE BUTTON
+   ============================================ */
+#theme-toggle {
+    position: fixed;
+    bottom: 930px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05); /* Multi-layer shadow */
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+#theme-toggle:hover {
+    transform: scale(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1); /* Larger shadow on hover */
+}
+
+/* ============================================
+   CSS VARIABLES & DARK MODE
+   ============================================ */
+:root {
+    --border: #e2e8e0;
+    --bg-card: #ffffff;
+    --text-primary: #333;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --accent: #97bc62;
+}
+
+html[data-theme="dark"] {
+    --border: #444;
+    --bg-card: #2a2a2a;
+    --text-primary: #e0e0e0;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --accent: #aed581;
+}
+
+html[data-theme="dark"] body {
+    color: #83c469af;
+    background-color: #092913;
+}
+
+html[data-theme="dark"] .about-card {
+    background: #2f5827;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .restaurant-name {
+    color: #81d58c;
+}
+
+html[data-theme="dark"] .tagline {
+    color: #c5e1a5;
+}
+
+html[data-theme="dark"] .divider {
+    background-color: #aed581;
+}
+
+html[data-theme="dark"] .about-text {
+    color: #b0b0b0;
+}
+
+html[data-theme="dark"] .contact-section {
+    background-color: #273d22;
+    border-left-color: #aed581;
+}
+
+html[data-theme="dark"] .contact-section h3 {
+    color: #aed581;
+}
+
+html[data-theme="dark"] .contact-label {
+    color: #aed581;
+}
+
+html[data-theme="dark"] .contact-value {
+    color: #b0b0b0;
+}
+
+html[data-theme="dark"] .contact-value a {
+    color: #c5e1a5;
+}
+
+html[data-theme="dark"] .contact-value a:hover {
+    color: #e8f5e9;
+}
+
+html[data-theme="dark"] .footer {
+    color: #888;
+}
+
+</style>
+
+    <div class="container">
+        <div class="about-card">
+            <h1 class="restaurant-name">{{ name }}</h1>
+            <p class="tagline">Come as a guest, leave as a friend.</p>
+            <div class="divider"></div>
+            
+            <p class="about-text">{{ Aboutus }}</p>
+            
+            <div class="contact-section">
+                <h3>Get in Touch</h3>
+                
+                <div class="contact-item">
+                    <span class="contact-label">Email:</span>
+                    <span class="contact-value">
+                        <a href="mailto:{{ Email }}">{{ Email }}</a>
+                    </span>
+                </div>
+                
+                <div class="contact-item">
+                    <span class="contact-label">Phone:</span>
+                    <span class="contact-value">{{ Phone }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Thank you for being part of our story.</p>
+        </div>
+    </div>
+{% endblock %}

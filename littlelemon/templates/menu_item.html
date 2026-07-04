@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+<style>
+    :root {
+        --primary-green: #2e7d32;
+        --light-green: #e8f5e9;
+        --white: #ffffff;
+        --text-dark: #1b5e20;
+        --text-muted: #4caf50;
+    }
+
+    .menu-detail {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: var(--light-green);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        position: relative;
+    }
+
+    .menu-detail .back-link {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: var(--primary-green);
+        text-decoration: none;
+        font-size: 0.95em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        background-color: var(--white);
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+
+    .menu-detail .back-link:hover {
+        background-color: var(--light-green);
+        transform: translateX(-2px);
+    }
+
+    .menu-detail .card {
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        padding: 40px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+        border-top: 6px solid var(--primary-green);
+    }
+
+    .menu-detail .category {
+        color: var(--text-muted);
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .menu-detail .title {
+        color: var(--text-dark);
+        font-size: 2.2em;
+        margin: 0 0 15px 0;
+    }
+
+    .menu-detail .price {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: var(--primary-green);
+        margin-bottom: 25px;
+    }
+
+    .menu-detail .inventory {
+        display: inline-block;
+        background-color: var(--light-green);
+        color: var(--primary-green);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+
+    .menu-detail .error {
+        color: #d32f2f;
+        display: none;
+    }
+
+    .menu-detail .loading {
+        color: var(--text-muted);
+    }
+</style>
+
+<div class="menu-detail">
+    <a href="http://127.0.0.1:8000/menu/" class="back-link">&larr; Back to Menu</a>
+    <div class="card" id="item-card">
+        <div id="loading" class="loading">Loading fresh ingredients...</div>
+        <div id="error" class="error">Invalid item ID</div>
+
+        <div id="content" style="display: none;">
+            <div class="category" id="item-category">Category</div>
+            <h1 class="title" id="item-title">Item Name</h1>
+            <div class="price">$<span id="item-price">0.00</span></div>
+            <div class="inventory" id="item-inventory">In Stock: 0</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Extract the menu ID from the URL path, e.g. /menu/5/ -> 5
+    const pathMatch = window.location.pathname.match(/\/menu\/(\d+)\/?/);
+    const MENU_ID = pathMatch ? pathMatch[1] : null;
+
+    // Point to the API endpoint (note the /api/ prefix)
+    const API_URL = `http://127.0.0.1:8000/api/menu/${MENU_ID}/`;
+
+    async function loadMenuItem() {
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const contentEl = document.getElementById('content');
+
+        // Handle invalid URLs gracefully
+        if (!MENU_ID) {
+            loadingEl.style.display = 'none';
+            errorEl.textContent = 'Invalid item ID in URL.';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        try {
+            const response = await fetch(API_URL);
+
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            document.getElementById('item-category').textContent = data.category_name;
+            document.getElementById('item-title').textContent = data.title;
+            document.getElementById('item-price').textContent = data.price;
+            document.getElementById('item-inventory').textContent = `In Stock: ${data.inventory}`;
+
+            loadingEl.style.display = 'none';
+            contentEl.style.display = 'block';
+
+        } catch (error) {
+            console.error("Fetch failed:", error);
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'block';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadMenuItem);
+</script>
+
+
+
+{% endblock %}

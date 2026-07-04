@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Lemon</title>
+    <style>
+        :root {
+            --bg-body: rgb(57, 46, 216);
+            --text-body: #ffffff;
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0f0f1e;
+            --text-body: #eaeaea;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-body);
+            transition: background-color var(--transition-speed) ease, 
+                        color var(--transition-speed) ease;
+            margin: 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Smooth transition for all themed elements */
+        * {
+            transition: background-color var(--transition-speed) ease, 
+                        color var(--transition-speed) ease,
+                        border-color var(--transition-speed) ease;
+        }
+    </style>
+</head>
+<body>
+    {% include "partials/_header.html"%}
+    <main>
+        {% block content%}
+        {% endblock %}
+    </main>
+
+    <script>
+        // Theme persistence
+        const html = document.documentElement;
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+
+        // Global toggle function (called from header button)
+        function toggleTheme() {
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .signup-page {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: #f0fdf4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .signup-page .signup-card {
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(22, 163, 74, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .signup-page .signup-card h1 {
+        color: #15803d;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .signup-page .signup-card .subtitle {
+        color: #86efac;
+        text-align: center;
+        font-size: 14px;
+        margin-bottom: 32px;
+    }
+
+    .signup-page .signup-card .form-group {
+        margin-bottom: 20px;
+    }
+
+    .signup-page .signup-card label {
+        display: block;
+        color: #166534;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 6px;
+    }
+
+    .signup-page .signup-card input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #dcfce7;
+        border-radius: 10px;
+        font-size: 15px;
+        color: #14532d;
+        background: #ffffff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        outline: none;
+    }
+
+    .signup-page .signup-card input::placeholder {
+        color: #86efac;
+    }
+
+    .signup-page .signup-card input:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+
+    .signup-page .signup-card button {
+        width: 100%;
+        padding: 14px;
+        background: #16a34a;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        margin-top: 8px;
+    }
+
+    .signup-page .signup-card button:hover {
+        background: #15803d;
+    }
+
+    .signup-page .signup-card button:active {
+        transform: scale(0.98);
+    }
+
+    .signup-page .signup-card .message {
+        margin-top: 16px;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        text-align: center;
+        display: none;
+    }
+
+    .signup-page .signup-card .message.success {
+        display: block;
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .signup-page .signup-card .message.error {
+        display: block;
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .signup-page .signup-card .login-link {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 14px;
+        color: #86efac;
+    }
+
+    .signup-page .signup-card .login-link a {
+        color: #16a34a;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .signup-page .signup-card .login-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="signup-page">
+    <div class="signup-card">
+        <h1>Create Account</h1>
+        <p class="subtitle">Join us today</p>
+        
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder="john_doe" 
+                    required 
+                    autocomplete="username"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="john@example.com" 
+                    required 
+                    autocomplete="email"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="••••••••" 
+                    required 
+                    autocomplete="new-password"
+                >
+            </div>
+            
+            <button type="submit">Sign Up</button>
+        </form>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="login-link">
+            Already have an account? <a href="/login">Log in</a>
+        </div>
+    </div>
+
+ <script>
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const messageEl = document.getElementById('message');
+        // Reset to just the base class. We deliberately do NOT set
+        // messageEl.style.display anywhere in this script. An inline style
+        // (element.style.x) always overrides a stylesheet rule like
+        // ".message.error { display: block; }", no matter how specific the
+        // CSS selector is. The original code set style.display = 'none'
+        // here, and that inline value stuck around even after
+        // classList.add('error') tried to turn display back on — which is
+        // why error messages never actually became visible. Letting the
+        // .message / .message.success / .message.error CSS classes fully
+        // control visibility fixes that.
+        messageEl.className = 'message';
+        messageEl.textContent = '';
+
+        const userData = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            email: document.getElementById('email').value
+        };
+
+        fetch('http://127.0.0.1:8000/auth/users/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData)
+        })
+        .then(async response => {
+            // Try to read the response body as JSON regardless of whether
+            // the request succeeded or failed. DRF validation errors come
+            // back as JSON, but a server crash (500) or a wrong URL (404)
+            // might return an HTML page instead — response.json() would
+            // throw in that case, so it's wrapped in try/catch rather than
+            // being allowed to throw past our own error handling below.
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (parseErr) {
+                data = null;
+            }
+
+            if (response.ok) {
+                messageEl.textContent = 'Account created successfully!';
+                messageEl.classList.add('success');
+                document.getElementById('signupForm').reset();
+
+                // THE REDIRECT: Call the digital taxi
+                window.location.href = '/login/';
+            } else {
+                // DRF typically returns errors shaped like
+                // { "username": ["already taken"], "email": ["invalid"] }.
+                // Object.values(...).flat() collapses that into a single
+                // flat array of every error string, which we join into one
+                // readable line. If the body wasn't JSON (data is null) or
+                // had no field errors, fall back to a generic message that
+                // still includes the HTTP status code for debugging.
+                const errors = data
+                    ? Object.values(data).flat().join(' ')
+                    : `Signup failed (status ${response.status}).`;
+                throw new Error(errors || 'Signup failed');
+            }
+        })
+        .catch(error => {
+            // This catches two different failure modes in one place:
+            // 1) the Error we threw above for a non-ok HTTP response, and
+            // 2) network-level failures — e.g. the Django server isn't
+            //    running, a CORS block, or a DNS/connection failure —
+            //    where fetch() itself rejects before any response exists.
+            // Either way, the message is written into the same element and
+            // the .error class is applied so the red styling and
+            // display:block from the CSS take over.
+            messageEl.textContent = error.message || 'Something went wrong. Please try again.';
+            messageEl.classList.add('error');
+        });
+    });
+</script>
+</div>
+{% endblock %}

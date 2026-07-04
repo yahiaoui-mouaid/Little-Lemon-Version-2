@@ -38,9 +38,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'restaurant',
+    'rest_framework',
+    'djoser',
+    'rest_framework_simplejwt',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -133,6 +138,50 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'restaurant' / 'static',
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    # How long the access token lasts (e.g., 5 minutes, 1 hour)                          
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7), 
+    
+    # How long the refresh token lasts (e.g., 1 day, 7 days)
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+    
+    # Optional: Match this with whatever prefix you used in Insomnia (Default is 'Bearer')
+    "AUTH_HEADER_TYPES": ("JWT", "Bearer"),
+}
+
+
+# tell Djoser to use this new serializer.
+# Note: Updating 'user' changes the creation/list response, while 'current_user' changes the /auth/users/me/ response. It is usually best to update both.
+DJOSER = {
+    'SERIALIZERS': {
+        'user': 'restaurant.serializers.UserRoleSerializer',
+        'current_user': 'restaurant.serializers.UserRoleSerializer',
+    },
+}
+
+
+
+# Tell the Django project to stop using the default user and start using your new custom one
+
+AUTH_USER_MODEL = 'restaurant.CustomUser'
+
+
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 

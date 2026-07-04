@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="members-page">
+    <h1>Team Members</h1>
+    <div id="members-container" class="members-grid">
+        <p id="loading-text">Loading members...</p>
+    </div>
+</div>
+
+
+
+<style>
+    .members-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        padding: 2rem;
+        justify-content: center;
+    }
+
+    .member-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        width: 220px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .member-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .member-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #4f46e5;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 0 auto 1rem;
+    }
+
+    .member-role {
+        display: inline-block;
+        margin-top: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        text-transform: capitalize;
+        background: #eef2ff;
+        color: #4f46e5;
+    }
+
+    .error-text {
+        color: #dc2626;
+        text-align: center;
+        width: 100%;
+    }
+</style>
+
+
+<script>
+    async function loadMembers() {
+        const container = document.getElementById('members-container');
+        
+        // Check both common names just in case!
+        const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
+        
+        // AHA MOMENT: Check your F12 console. If this says "Token is: null", your login page isn't saving it right!
+        console.log("Token is:", accessToken); 
+
+        if (!accessToken) {
+            container.innerHTML = '<p class="error-text">No token found. Please log in again.</p>';
+            return;
+        }
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/members-data/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Changed 'Bearer' to 'JWT'. If you specifically configured SimpleJWT to use Bearer, change this back.
+                    'Authorization': 'JWT ' + accessToken 
+                }
+            });
+
+            if (!response.ok) {
+                // This will tell you if it's a 401 (Bad Token) or 403 (Token works, but not a manager)
+                throw new Error(`Server responded with ${response.status}`);
+            }
+
+            const members = await response.json();
+            container.innerHTML = ''; 
+
+            if (members.length === 0) {
+                container.innerHTML = '<p>No members found.</p>';
+                return;
+            }
+
+            members.forEach(member => {
+                const card = document.createElement('div');
+                card.className = 'member-card';
+                const initial = member.username.charAt(0).toUpperCase();
+
+                card.innerHTML = `
+                    <div class="member-avatar">${initial}</div>
+                    <h3>${member.username}</h3>
+                    <span class="member-role">${member.role}</span>
+                `;
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            container.innerHTML = `<p class="error-text">Failed to load members: ${error.message}</p>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadMembers);
+</script>
+
+
+{% endblock %}
+

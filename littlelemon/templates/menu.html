@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Lemon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fdf8;
+            color: #1a472a;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #2d6a4f;
+            color: white;
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            margin-top: 0.5rem;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .loading, .error, .empty {
+            text-align: center;
+            padding: 3rem;
+            color: #6b9080;
+        }
+
+        .error {
+            color: #c0392b;
+        }
+
+        .category {
+            margin-bottom: 2.5rem;
+        }
+
+        .category-title {
+            font-size: 1.3rem;
+            color: #2d6a4f;
+            border-bottom: 2px solid #95d5b2;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            text-transform: capitalize;
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e8f5e9;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #f0fdf4;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            margin: 0 -1rem;
+            border-radius: 8px;
+        }
+
+        .item-title {
+            font-weight: 500;
+            color: #1b4332;
+        }
+
+        .item-title a {
+            color: #1b4332;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .item-title a:hover {
+            color: #2d6a4f;
+            text-decoration: underline;
+        }
+
+        .item-price {
+            font-weight: 600;
+            color: #2d6a4f;
+            font-size: 1.1rem;
+            white-space: nowrap;
+            margin-left: 1rem;
+        }
+
+        .dots {
+            flex: 1;
+            border-bottom: 1px dotted #b7e4c7;
+            margin: 0 1rem;
+            position: relative;
+            top: -4px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #74c69d;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            .menu-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.3rem;
+            }
+            .dots {
+                display: none;
+            }
+            .item-price {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Little Lemon</h1>
+        <p>Fresh & Simple</p>
+    </header>
+
+    <div class="container" id="menu-container">
+        <div class="loading">Loading menu...</div>
+    </div>
+
+    <footer>
+        &copy; 2026 Little Lemon
+    </footer>
+
+    <script>
+        async function fetchMenu() {
+            const container = document.getElementById('menu-container');
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/menu');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                renderMenu(data, container);
+            } catch (err) {
+                container.innerHTML = `
+                    <div class="error">
+                        <p>Unable to load menu.</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">${err.message}</p>
+                        <button onclick="fetchMenu()" style="margin-top: 1rem; padding: 0.5rem 1.5rem; background: #2d6a4f; color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderMenu(items, container) {
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="empty">No items available.</div>';
+                return;
+            }
+
+            // Group items by category
+            const grouped = items.reduce((acc, item) => {
+                const cat = item.category_name || 'Other';
+                if (!acc[cat]) acc[cat] = [];
+                acc[cat].push(item);
+                return acc;
+            }, {});
+
+            let html = '';
+            
+            for (const [category, categoryItems] of Object.entries(grouped)) {
+                html += `<div class="category">
+                    <div class="category-title">${escapeHtml(category)}</div>`;
+                
+                for (const item of categoryItems) {
+                    const itemUrl = `/menu/${item.id}/`;
+                    html += `
+                        <div class="menu-item">
+                            <span class="item-title">
+                                <a href="${escapeHtml(itemUrl)}">${escapeHtml(item.title)}</a>
+                            </span>
+                            <span class="dots"></span>
+                            <span class="item-price">$${formatPrice(item.price)}</span>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatPrice(price) {
+            const num = parseFloat(price);
+            return isNaN(num) ? price : num.toFixed(2);
+        }
+
+        // Load on page load
+        fetchMenu();
+    </script>
+</body>
+
+
+
+
+{% endblock %}
