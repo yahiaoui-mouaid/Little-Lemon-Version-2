@@ -59,3 +59,6 @@ class IsManagerOnly(BasePermission):
         # 2. Only allow users whose role is exactly 'manager'
         return getattr(request.user, 'role', None) == 'MANAGER'
 
+
+
+

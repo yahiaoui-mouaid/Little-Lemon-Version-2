@@ -1,41 +1,45 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from restaurant import views 
+from bookings.views import BookingViewSet
+from menu.views import MenuView, CategoryView, CategoryNameView
+from orders.views import CartItemViewSet, OrderViewSet, ConfirmOrderView
+from users.views import MembersDataAPI, ManagerDashboardView 
+
+from django.conf import settings 
+from django.conf.urls.static import static
 
 
 
 router = DefaultRouter()
-router.register(r'tables', views.BookingViewSet)
-router.register(r'menu', views.MenuView)
-router.register(r'categories', views.CategoryView)
-
-router.register(r'category-names', views.CategoryNameView, basename='category-names')
-
-router.register(r'cart-items', views.CartItemViewSet)
-
-router.register(r'orders', views.OrderViewSet, basename='order')
-
-router.register(r'members-data', views.MembersDataAPI)
-
-
+router.register(r'tables', BookingViewSet)
+router.register(r'menu', MenuView)
+router.register(r'categories', CategoryView)
+router.register(r'category-names', CategoryNameView, basename='category-names')
+router.register(r'cart-items', CartItemViewSet)
+router.register(r'orders', OrderViewSet, basename='order')
+router.register(r'members-data', MembersDataAPI)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('restaurant.urls')),
+    
+    # 3. Point your standard web pages to the new 'pages' app
+    path('', include('pages.urls')),
 
-
+    # Djoser authentication endpoints:
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
+    
+    # Centralized API router
     path('api/', include(router.urls)),
- 
 
-    # path('api/confirm-order/', views.ConfirmOrderView.as_view(), name='confirm-order'),
-
-    path('api/orders-confirmation/', views.ConfirmOrderView.as_view(), name='order-list'),
-
-    path('api/dashboard/', views.ManagerDashboardView.as_view(), name='dashboard'),
-
+    # Point these specific API paths to their imported views
+    path('api/orders-confirmation/', ConfirmOrderView.as_view(), name='order-list'),
+    path('api/dashboard/', ManagerDashboardView.as_view(), name='dashboard'),
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

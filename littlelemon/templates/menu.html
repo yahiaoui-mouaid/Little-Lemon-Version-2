@@ -538,16 +538,8 @@
 
   function getCategoryEmoji(category) {
     const cat = (category || '').toString().toLowerCase();
-    if (cat.includes('starter')) return '🧆';
-    if (cat.includes('main')) return '🍗';
-    if (cat.includes('dessert')) return '🍯';
-    if (cat.includes('fruit')) return '🍎';
-    if (cat.includes('algerian')) return '🥘';
-    if (cat.includes('american')) return '🍔';
-    if (cat.includes('japanese')) return '🍣';
-    if (cat.includes('mexican')) return '🌮';
-    if (cat.includes('italy') || cat.includes('italian')) return '🍝';
-    return '🍽️';
+
+    return '';
   }
 
   function clampQuantity(input) {

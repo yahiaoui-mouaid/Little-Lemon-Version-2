@@ -1,10 +1,10 @@
 from django.urls import path
 from . import views
-from rest_framework import routers
 
-# Explicitly name the app to allow reverse lookups like 'restaurant:booking'
+
+# Explicitly name the app to allow reverse lookups like 'pages:booking'
 # In case there are same api end points in another app it won't be hard for django to tell the difference :)
-app_name = 'restaurant'
+app_name = 'pages'
 
 
 urlpatterns = [
@@ -39,6 +39,5 @@ urlpatterns = [
     path('login/', views.login_page, name='login'),
     path('logout/', views.logout_page, name='logout'),
 ]
-
 
 

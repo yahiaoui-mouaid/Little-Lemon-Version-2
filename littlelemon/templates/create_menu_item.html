@@ -124,6 +124,12 @@
         appearance: none;
         -webkit-appearance: none;
     }
+    
+    /* specific styling for file input */
+    .form-group input[type="file"] {
+        padding: 9px 14px;
+        background: var(--surface);
+    }
 
     .form-group input::placeholder {
         color: var(--text-muted);
@@ -192,7 +198,7 @@
         box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
     }
 
-    .btn:hover:not(:disabled)::after {
+    .btn:hover:not(:disabled):::after {
         background: rgba(255,255,255,0.08);
     }
 
@@ -269,6 +275,15 @@
 
     .menu-card:hover::before {
         transform: scaleX(1);
+    }
+    
+    /* ── Image Styling ── */
+    .menu-image {
+        width: calc(100% + 48px);
+        height: 180px;
+        object-fit: cover;
+        margin: -24px -24px 16px -24px;
+        border-bottom: 1px solid var(--border);
     }
 
     .menu-card-header {
@@ -362,7 +377,7 @@
 
     <section class="dish-form-card">
         <h2>Add New Dish</h2>
-        <form id="dishForm">
+        <form id="dishForm" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-grid">
                 <div class="form-group">
@@ -373,10 +388,6 @@
                     <label for="category">Category</label>
                     <select id="category" name="category" required>
                         <option value="" disabled selected>Select a category</option>
-                        <option value="appetizer">Appetizer</option>
-                        <option value="main">Main Course</option>
-                        <option value="dessert">Dessert</option>
-                        <option value="beverage">Beverage</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -386,6 +397,10 @@
                 <div class="form-group">
                     <label for="inventory">Inventory Count</label>
                     <input type="number" id="inventory" name="inventory" required placeholder="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="image">Dish Image</label>
+                    <input type="file" id="image" name="image" accept="image/*">
                 </div>
             </div>
             <button type="submit" id="submitBtn" class="btn">Save Dish</button>
@@ -413,33 +428,25 @@
 </main>
 
 <script>
-
-
-
 const loadCategories = async () => {
     const categorySelect = document.getElementById('category');
     const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
 
     try {
-        // Change this URL to your actual categories endpoint
         const response = await fetch('http://127.0.0.1:8000/api/categories/', {
-                            headers: {
-                    'Content-Type': 'application/json',
-                    // Changed 'Bearer' to 'JWT'. If you specifically configured SimpleJWT to use Bearer, change this back.
-                    'Authorization': 'JWT ' + accessToken 
-                }
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'JWT ' + accessToken 
+            }
         });
         
         const categories = await response.json();
-        
-        // Clear the "Loading..." text
         categorySelect.innerHTML = '<option value="" disabled selected>Choose a category...</option>';
         
-        // Loop through the database categories and create an <option> for each
         categories.forEach(cat => {
             const option = document.createElement('option');
-            option.value = cat.id;          // The server ID (e.g., 4)
-            option.textContent = cat.name;  // The friendly name (e.g., "Desserts")
+            option.value = cat.id;
+            option.textContent = cat.name;
             categorySelect.appendChild(option);
         });
         
@@ -449,15 +456,11 @@ const loadCategories = async () => {
     }
 };
 
-// Call this right when the page loads, alongside fetchMenu()
 loadCategories();
-
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const API_URL = 'http://127.0.0.1:8000/api/menu/';
     
-    // DOM Elements
     const form = document.getElementById('dishForm');
     const submitBtn = document.getElementById('submitBtn');
     const menuGrid = document.getElementById('menuGrid');
@@ -466,15 +469,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyState = document.getElementById('emptyState');
     const retryBtn = document.getElementById('retryBtn');
     
-    // Helper to get CSRF token from Django's hidden input
     const getCsrfToken = () => {
         const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
         return tokenInput ? tokenInput.value : '';
     };
 
-    // Helper to setup Authorization Header (Update this based on your auth method)
     const getAuthToken = () => {
-        return localStorage.getItem('access_token') || localStorage.getItem('access');; // Replace with actual token retrieval
+        return localStorage.getItem('access_token') || localStorage.getItem('access');
     };
  
     const setUIState = (state) => {
@@ -490,7 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('article');
             card.className = 'menu-card';
             
-            // Determine inventory status style
             let invClass = '';
             let invText = `${item.inventory} in stock`;
             if (item.inventory === 0) {
@@ -501,8 +501,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 invText = `Low stock (${item.inventory})`;
             }
 
+            // NEW: Image HTML Logic
+            const imageHtml = item.image ? `<img src="${item.image}" alt="${item.title}" class="menu-image">` : '';
+
             card.innerHTML = `
-                <div class="menu-category">${item.category_name}</div>
+                ${imageHtml}
+                <div class="menu-category">${item.category_name || 'Category'}</div>
                 <div class="menu-card-header">
                     <h3 class="menu-title">${item.title}</h3>
                     <span class="menu-price">$${parseFloat(item.price).toFixed(2)}</span>
@@ -543,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // NEW: Updated Submit Handler using FormData
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         
@@ -550,23 +555,16 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Saving...';
         
         const formData = new FormData(form);
-        const payload = {
-            category: parseInt(formData.get('category')),
-            category_name: formData.get('category_name'),
-            title: formData.get('title'),
-            price: formData.get('price'),
-            inventory: parseInt(formData.get('inventory'))
-        };
 
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': getCsrfToken(),
                     'Authorization': `Bearer ${getAuthToken()}`
+                    // 'Content-Type': 'application/json' is REMOVED
                 },
-                body: JSON.stringify(payload)
+                body: formData // Sending the FormData object directly
             });
 
             if (!response.ok) {
@@ -574,7 +572,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(JSON.stringify(errData) || 'Failed to save dish');
             }
             
-            // Clear form and refresh list on success
             form.reset();
             fetchMenu();
             
@@ -587,12 +584,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Event Listeners
     form.addEventListener('submit', handleFormSubmit);
     retryBtn.addEventListener('click', fetchMenu);
 
-    // Initial Load
     fetchMenu();
 });
 </script>
 {% endblock %}
+
+
+

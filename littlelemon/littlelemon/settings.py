@@ -37,12 +37,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'restaurant',
     'rest_framework',
     'djoser',
     'rest_framework_simplejwt',
     'corsheaders',
-    "django_filters",
+    'django_filters',
+    'users',
+    'menu',
+    'orders',
+    'bookings',
+    'pages',
 ]
 
 MIDDLEWARE = [
@@ -136,9 +140,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'restaurant' / 'static',
-]
+# The public URL your browser will use to ask for the image
+MEDIA_URL = '/media/'
+
+# The actual folder on your computer where Django saves the file
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 
 REST_FRAMEWORK = {
@@ -169,8 +176,8 @@ SIMPLE_JWT = {
 # Note: Updating 'user' changes the creation/list response, while 'current_user' changes the /auth/users/me/ response. It is usually best to update both.
 DJOSER = {
     'SERIALIZERS': {
-        'user': 'restaurant.serializers.UserRoleSerializer',
-        'current_user': 'restaurant.serializers.UserRoleSerializer',
+        'user': 'users.serializers.UserRoleSerializer',
+        'current_user': 'users.serializers.UserRoleSerializer',
     },
 }
 
@@ -178,7 +185,7 @@ DJOSER = {
 
 # Tell the Django project to stop using the default user and start using your new custom one
 
-AUTH_USER_MODEL = 'restaurant.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 
 
