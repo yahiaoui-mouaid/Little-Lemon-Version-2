@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
+
+<div class="max-w-4xl mx-auto p-4 md:p-8">
+    <header class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Order History</h1>
+        <p class="text-gray-500 mt-2">Review your past purchases and receipts.</p>
+    </header>
+
+    <main>
+        <div id="loading-state" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+
+        <div id="error-state" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm mb-6" role="alert">
+            <p class="font-bold">Oops!</p>
+            <p id="error-message">Something went wrong while fetching your orders.</p>
+        </div>
+
+        <div id="orders-container" class="space-y-6 hidden">
+            </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', fetchOrders);
+
+    async function fetchOrders() {
+        const container = document.getElementById('orders-container');
+        const loading = document.getElementById('loading-state');
+        const errorState = document.getElementById('error-state');
+        const errorMessage = document.getElementById('error-message');
+
+        const token = localStorage.getItem('access_token') || localStorage.getItem('access');
+
+        if (!token) {
+            showError("You are not logged in. Please log in to see your orders.");
+            return;
+        }
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/orders/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server returned a ${response.status} error.`);
+            }
+
+            const orders = await response.json();
+            renderOrders(orders);
+
+        } catch (error) {
+            showError("Could not connect to the server. Please check your connection and try again.");
+            console.error(error);
+        }
+
+        function showError(msg) {
+            loading.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            errorMessage.textContent = msg;
+        }
+
+        function renderOrders(orders) {
+            loading.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            if (orders.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 text-center py-8">You haven't placed any orders yet.</p>`;
+                return;
+            }
+
+            let html = '';
+
+            orders.forEach(order => {
+                const orderDate = new Date(order.date_ordered).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                let itemsHtml = '';
+                order.items.forEach(orderItem => {
+                    itemsHtml += `
+                        <div class="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
+                            <div>
+                                <p class="font-medium text-gray-800">${orderItem.item.title}</p>
+                                <p class="text-sm text-gray-500">${orderItem.item.category_name} • Qty: ${orderItem.quantity}</p>
+                            </div>
+                            <div class="font-medium text-gray-700">
+                                $${parseFloat(orderItem.item.price).toFixed(2)}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Order #${order.id}</p>
+                                <p class="text-sm text-gray-600 mt-1">${orderDate}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Total (${order.items_count} items)</p>
+                                <p class="text-xl font-bold text-blue-600">$${parseFloat(order.total_price).toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <div class="px-6 py-2">
+                            ${itemsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+    }
+</script>
+{% endblock %}

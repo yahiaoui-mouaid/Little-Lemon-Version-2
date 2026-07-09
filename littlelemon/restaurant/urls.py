@@ -24,10 +24,14 @@ urlpatterns = [
 
     path('members/', views.members_page, name='members'),
 
-    path('order-confirmation/', views.order_confirmation_page, name='members'),
+    path('order-confirmation/', views.order_confirmation_page, name='order-confirmation'),
+
+    path('myorders/', views.myorders_page, name='myorders'),
+
 
     path('book-table/', views.book_table_page, name='members'),
 
+    path('dashboard/', views.dashboard_page, name='dashboard'),
 
     path('about/', views.about_page, name='abou'),
 

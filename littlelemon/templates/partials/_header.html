@@ -5,30 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Little Lemon</title>
   <style>
-    /* CSS Variables for theming */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
     :root {
-      --bg-primary: #f5f5f5;
+      --bg-primary: #fafaf9;
       --bg-secondary: #ffffff;
-      --text-primary: #1a1a2e;
-      --text-secondary: #4a4a6a;
-      --accent: #4B6B33;
-      --accent-hover: #3d5a2a;
-      --nav-bg: #4B6B33;
-      --nav-text: #eaeaea;
-      --shadow: rgba(0,0,0,0.1);
+      --text-primary: #1c1917;
+      --text-secondary: #78716c;
+      --accent: #d97706;
+      --accent-hover: #b45309;
+      --nav-bg: rgba(250, 250, 249, 0.85);
+      --nav-text: #1c1917;
+      --nav-border: rgba(231, 229, 228, 0.5);
+      --shadow: rgba(0,0,0,0.05);
       --transition-speed: 0.3s;
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --radius: 12px;
     }
 
     [data-theme="dark"] {
-      --bg-primary: #193316;
-      --bg-secondary: #1a1a2e;
-      --text-primary: #eaeaea;
-      --text-secondary: #b8b8d1;
-      --accent: #4B6B33;
-      --accent-hover: #5a7a3d;
-      --nav-bg: #0b240d;
-      --nav-text: #eaeaea;
-      --shadow: rgba(0,0,0,0.4);
+      --bg-primary: #0c0a09;
+      --bg-secondary: #1c1917;
+      --text-primary: #fafaf9;
+      --text-secondary: #a8a29e;
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --nav-bg: rgba(12, 10, 9, 0.85);
+      --nav-text: #fafaf9;
+      --nav-border: rgba(68, 64, 60, 0.5);
+      --shadow: rgba(0,0,0,0.3);
     }
 
     body {
@@ -36,36 +42,59 @@
       color: var(--text-primary);
       transition: background-color var(--transition-speed), color var(--transition-speed);
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     /* Navbar */
     .navbar {
-      background-color: var(--nav-bg);
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       padding: 0 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 60px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      transition: background-color var(--transition-speed);
-      position: relative;
+      height: 72px;
+      border-bottom: 1px solid var(--nav-border);
+      transition: all var(--transition-speed) ease;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
       z-index: 1000;
     }
 
+    .navbar.scrolled {
+      box-shadow: 0 1px 3px var(--shadow);
+    }
+
     .nav-brand {
-      color: #F5F5DC;
+      font-family: var(--font-serif);
+      color: var(--text-primary);
       font-size: 1.5rem;
-      font-weight: bold;
+      font-weight: 700;
       text-decoration: none;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.02em;
+      transition: color var(--transition-speed);
+    }
+
+    .nav-brand span {
+      font-size: 1.3rem;
+      display: inline-flex;
+      align-items: center;
     }
 
     /* Desktop Nav Links */
     .nav-links {
       list-style: none;
       display: flex;
-      gap: 0.5rem;
+      gap: 0.25rem;
       margin: 0;
       padding: 0;
       align-items: center;
@@ -77,81 +106,116 @@
     }
 
     .nav-links a {
-      color: var(--nav-text);
+      color: var(--text-secondary);
       text-decoration: none;
-      font-size: 0.95rem;
+      font-size: 0.875rem;
       font-weight: 500;
-      padding: 0.5rem 0.8rem;
-      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
       transition: all 0.3s ease;
       white-space: nowrap;
+      position: relative;
+      letter-spacing: 0.02em;
     }
 
     .nav-links a:hover {
-      color: #f8f8f8;
-      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      background: rgba(0,0,0,0.03);
+    }
+
+    [data-theme="dark"] .nav-links a:hover {
+      background: rgba(255,255,255,0.05);
     }
 
     .nav-links a.active {
-      color: #90ee90;
-      background-color: rgba(0, 0, 0, 0.2);
+      color: var(--accent);
+      background: rgba(217, 119, 6, 0.08);
+      font-weight: 600;
     }
 
-    /* Theme Toggle (also reused for the basket button) */
-    .theme-toggle {
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid rgba(144, 238, 144, 0.3);
-      border-radius: 50px;
+    /* Icon Buttons (Basket & Theme) */
+    .icon-btn {
+      background: transparent;
+      border: 1px solid var(--nav-border);
+      border-radius: 50%;
       width: 40px;
       height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      margin-left: 1rem;
+      margin-left: 0.5rem;
       transition: all 0.3s ease;
-      color: var(--nav-text);
+      color: var(--text-secondary);
       position: relative;
       overflow: hidden;
       flex-shrink: 0;
+      padding: 0;
     }
 
-    .theme-toggle:hover {
-      border-color: #90ee90;
-      background: rgba(144, 238, 144, 0.15);
-      transform: scale(1.1);
+    .icon-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(217, 119, 6, 0.05);
+      transform: translateY(-1px);
     }
 
-    .theme-toggle:active {
+    .icon-btn:active {
       transform: scale(0.95);
     }
 
-    .theme-toggle svg {
-      width: 20px;
-      height: 20px;
+    .icon-btn svg {
+      width: 18px;
+      height: 18px;
       transition: transform 0.5s ease, opacity 0.3s ease;
     }
 
-    .theme-toggle .sun-icon {
+    .icon-btn .sun-icon {
       position: absolute;
       opacity: 0;
       transform: rotate(-90deg) scale(0.5);
     }
 
-    .theme-toggle .moon-icon {
+    .icon-btn .moon-icon {
       position: absolute;
       opacity: 1;
       transform: rotate(0) scale(1);
     }
 
-    [data-theme="dark"] .theme-toggle .sun-icon {
+    [data-theme="dark"] .icon-btn .sun-icon {
       opacity: 1;
       transform: rotate(0) scale(1);
     }
 
-    [data-theme="dark"] .theme-toggle .moon-icon {
+    [data-theme="dark"] .icon-btn .moon-icon {
       opacity: 0;
       transform: rotate(90deg) scale(0.5);
+    }
+
+    /* Basket badge */
+    .basket-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 18px;
+      height: 18px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--nav-bg);
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.3s ease;
+    }
+
+    .basket-badge.visible {
+      opacity: 1;
+      transform: scale(1);
     }
 
     /* Hamburger Menu (Mobile) */
@@ -159,20 +223,20 @@
       display: none;
       flex-direction: column;
       justify-content: space-around;
-      width: 28px;
-      height: 24px;
+      width: 24px;
+      height: 20px;
       background: transparent;
       border: none;
       cursor: pointer;
       padding: 0;
-      margin-left: 1rem;
+      margin-left: 0.75rem;
       z-index: 1100;
     }
 
     .hamburger span {
       width: 100%;
       height: 2px;
-      background-color: #F5F5DC;
+      background-color: var(--text-primary);
       border-radius: 2px;
       transition: all 0.3s ease;
       transform-origin: center;
@@ -184,16 +248,18 @@
 
     .hamburger.active span:nth-child(2) {
       opacity: 0;
+      transform: translateX(-10px);
     }
 
     .hamburger.active span:nth-child(3) {
-      transform: rotate(-45deg) translate(7px, -6px);
+      transform: rotate(-45deg) translate(5px, -5px);
     }
 
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .navbar {
-        padding: 0 1rem;
+        padding: 0 1.25rem;
+        height: 64px;
       }
 
       .hamburger {
@@ -202,21 +268,25 @@
 
       .nav-links {
         position: fixed;
-        top: 60px;
+        top: 64px;
         left: 0;
         right: 0;
-        background-color: var(--nav-bg);
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         flex-direction: column;
         align-items: flex-start;
-        padding: 1rem 2rem;
-        gap: 0;
-        transform: translateY(-100%);
+        padding: 1.5rem;
+        gap: 0.25rem;
+        transform: translateY(-20px);
         opacity: 0;
         visibility: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        max-height: calc(100vh - 60px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 30px var(--shadow);
+        max-height: calc(100vh - 64px);
         overflow-y: auto;
+        border-bottom: 1px solid var(--nav-border);
+        border-top: 1px solid var(--nav-border);
       }
 
       .nav-links.active {
@@ -227,7 +297,7 @@
 
       .nav-links li {
         width: 100%;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid var(--nav-border);
       }
 
       .nav-links li:last-child {
@@ -237,12 +307,24 @@
       .nav-links a {
         display: block;
         width: 100%;
-        padding: 1rem 0;
-        font-size: 1.1rem;
+        padding: 0.875rem 0;
+        font-size: 1rem;
+        border-radius: 0;
+        background: transparent !important;
       }
 
-      .theme-toggle {
-        margin: 1rem 0 0 0;
+      .nav-links a:hover {
+        color: var(--accent);
+        padding-left: 0.5rem;
+      }
+
+      .nav-links a.active {
+        background: transparent !important;
+        color: var(--accent);
+      }
+
+      .icon-btn {
+        margin: 0.5rem 0 0 0;
         width: 44px;
         height: 44px;
       }
@@ -250,7 +332,7 @@
 
     @media (max-width: 480px) {
       .nav-brand {
-        font-size: 1.2rem;
+        font-size: 1.25rem;
       }
     }
 
@@ -259,12 +341,25 @@
       opacity: 0.6;
       pointer-events: none;
     }
+
+    /* Body padding for fixed navbar */
+    body {
+      padding-top: 72px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding-top: 64px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <nav class="navbar">
-    <a href="/" class="nav-brand">Little Lemon</a>
+  <nav class="navbar" id="navbar">
+    <a href="/" class="nav-brand">
+      <span>🍋</span> Little Lemon
+    </a>
     
     <button class="hamburger" id="hamburger" aria-label="Toggle menu">
       <span></span>
@@ -274,26 +369,26 @@
 
     <ul class="nav-links" id="navLinks">
       <!-- Links will be injected by JavaScript based on user role -->
-      <li style="padding: 1rem; color: var(--nav-text);">Loading...</li>
+      <li style="padding: 1rem; color: var(--text-secondary); font-size: 0.875rem;">Loading...</li>
 
-      <!-- Basket button: sits before the theme toggle, always visible -->
+      <!-- Basket button -->
       <li>
-        <button class="theme-toggle" id="basketBtn" aria-label="View basket">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M3 9l1.5-4.5A2 2 0 016.4 3h11.2a2 2 0 011.9 1.5L21 9M3 9h18M3 9l1 9.5A2 2 0 006 20.5h12a2 2 0 002-2.5L21 9M9 12v3m6-3v3">
-            </path>
+        <button class="icon-btn" id="basketBtn" aria-label="View basket">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"></path>
           </svg>
+          <span class="basket-badge" id="basketBadge">0</span>
         </button>
       </li>
 
+      <!-- Theme toggle -->
       <li>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-          <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">
+          <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"></path>
           </svg>
-          <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"></path>
           </svg>
         </button>
       </li>
@@ -302,7 +397,7 @@
 
   <script>
 
-// ==================== CONFIGURATION ====================
+    // ==================== CONFIGURATION ====================
     const API_BASE_URL = ''; // Set to your API base, e.g., 'http://127.0.0.1:8000'
     const AUTH_ENDPOINT = '/auth/users/me';
 
@@ -314,9 +409,11 @@
       { href: '/menu',      label: 'Menu',         roles: ['manager', 'delivery', 'customer'] },
       { href: '/menu/create/',   label: 'New Dish',     roles: ['manager'] },
       { href: '/newcategory', label: 'New Category', roles: ['manager'] },
-      { href: '/about',     label: 'About',        roles: ['manager', 'delivery', 'customer', 'guest'] },
       { href: '/login',     label: 'Log in',   roles: ['guest'] },
       { href: '/signup',     label: 'Signup',   roles: ['guest'] },
+      { href: '/myorders',     label: 'My Orders',   roles: ['manager', 'delivery', 'customer'] },
+      { href: '/dashboard',     label: 'Dashboard',   roles: ['manager'] },
+      { href: '/about',     label: 'About',        roles: ['manager', 'delivery', 'customer', 'guest'] },
       { href: '/logout',     label: 'Log out',   roles: ['manager', 'delivery', 'customer'] },
     ];
 
@@ -334,7 +431,6 @@
     });
 
     // ==================== BASKET BUTTON ====================
-    // Navigates to the order confirmation page when clicked.
     document.getElementById('basketBtn').addEventListener('click', () => {
       window.location.href = '/order-confirmation';
     });
@@ -348,21 +444,30 @@
       navLinks.classList.toggle('active');
     });
 
-    // Close mobile menu when a link is clicked
     function closeMobileMenu() {
       hamburger.classList.remove('active');
       navLinks.classList.remove('active');
     }
 
+    // ==================== SCROLL EFFECT ====================
+    const navbar = document.getElementById('navbar');
+    function handleScroll() {
+      if (window.scrollY > 10) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
     // ==================== FETCH USER ROLE ====================
     async function fetchUserRole() {
       try {
-        // Try to get token from localStorage or sessionStorage
         const token = localStorage.getItem('access_token') || 
                       localStorage.getItem('token') || 
                       sessionStorage.getItem('token');
 
-        // If no token exists, user is a guest
         if (!token) {
           return { role: 'guest', authenticated: false };
         }
@@ -373,12 +478,10 @@
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          // Include credentials if using cookies instead of tokens
           credentials: 'include',
         });
 
         if (!response.ok) {
-          // Token invalid or expired -> treat as guest
           if (response.status === 401 || response.status === 403) {
             return { role: 'guest', authenticated: false };
           }
@@ -386,26 +489,20 @@
         }
 
         const userData = await response.json();
-        
-        // Extract role from response (adjust field name based on your API)
         const role = (userData.role || userData.user_type || userData.type || 'customer').toLowerCase();
         
         return { role: role, authenticated: true, data: userData };
 
       } catch (error) {
         console.warn('Auth check failed:', error);
-        // On network error, assume guest to avoid blocking UI
         return { role: 'guest', authenticated: false };
       }
     }
 
     // ==================== RENDER NAV LINKS ====================
     function renderNavLinks(userRole) {
-      // Filter links based on role
       const visibleLinks = ALL_LINKS.filter(link => link.roles.includes(userRole));
 
-      // Grab the last two static <li> elements (basket button + theme toggle)
-      // before we wipe out navLinks.innerHTML, so we can re-attach them after
       const persistentLis = Array.from(navLinks.querySelectorAll('li')).slice(-2);
 
       let linksHtml = '';
@@ -413,15 +510,11 @@
         linksHtml += `<li><a href="${link.href}" data-nav-link>${link.label}</a></li>`;
       });
 
-      // Rebuild navLinks, then re-attach the preserved buttons in their
-      // original order (basket, then theme toggle)
       navLinks.innerHTML = linksHtml;
       persistentLis.forEach(li => navLinks.appendChild(li));
 
-      // Highlight current page
       highlightCurrentPage();
 
-      // Add click handlers to close mobile menu
       navLinks.querySelectorAll('a[data-nav-link]').forEach(link => {
         link.addEventListener('click', closeMobileMenu);
       });
@@ -434,23 +527,19 @@
 
       const links = Array.from(document.querySelectorAll('.nav-links a[data-nav-link]'));
       
-      // Clear all active states
       links.forEach(link => link.classList.remove('active'));
 
-      // Find all valid matches and pick the longest (most specific) href
       const matches = links.map(link => {
         let href = link.getAttribute('href');
         if (href.endsWith('/')) href = href.slice(0, -1) || '/';
         return { link, href };
       }).filter(({ href }) => {
-        if (href === currentPage) return true;           // exact match
-        if (href === '/') return false;                   // don't let "/" match everything
-        // prefix match only if next char is "/" (avoids "/men" matching "/menu")
+        if (href === currentPage) return true;
+        if (href === '/') return false;
         return currentPage.startsWith(href) && currentPage[href.length] === '/';
       });
 
       if (matches.length > 0) {
-        // Longest href = most specific route
         const best = matches.reduce((a, b) => a.href.length >= b.href.length ? a : b);
         best.link.classList.add('active');
       }
@@ -462,7 +551,6 @@
       renderNavLinks(user.role);
     }
 
-    // Run on page load
     initNavbar();
   </script>
 

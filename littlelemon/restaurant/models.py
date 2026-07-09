@@ -65,7 +65,7 @@ class MenuItems(models.Model):
     class Meta:
         ordering = ['title']
 
-
+ 
 
 class Cart(models.Model):
 
@@ -90,7 +90,7 @@ class Order(models.Model):
 
  
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     item = models.ForeignKey(MenuItems, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     

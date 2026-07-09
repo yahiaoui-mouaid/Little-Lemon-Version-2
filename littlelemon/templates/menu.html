@@ -1,388 +1,768 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Little Lemon</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  :root {
+    --color-bg: #fafaf9;
+    --color-surface: #ffffff;
+    --color-text: #1c1917;
+    --color-text-muted: #78716c;
+    --color-accent: #d97706;
+    --color-accent-light: #fef3c7;
+    --color-sage-light: #f5f5f4;
+    --color-border: #e7e5e4;
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.02);
+    --radius: 16px;
+    --radius-sm: 12px;
+  }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8fdf8;
-            color: #1a472a;
-            line-height: 1.6;
-        }
+  [data-theme="dark"] {
+    --color-bg: #0c0a09;
+    --color-surface: #1c1917;
+    --color-text: #fafaf9;
+    --color-text-muted: #a8a29e;
+    --color-accent: #f59e0b;
+    --color-accent-light: rgba(245, 158, 11, 0.1);
+    --color-sage-light: #292524;
+    --color-border: #44403c;
+    --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -1px rgba(0,0,0,0.15);
+    --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.3), 0 10px 10px -5px rgba(0,0,0,0.2);
+  }
 
-        header {
-            background-color: #2d6a4f;
-            color: white;
-            text-align: center;
-            padding: 3rem 1rem;
-        }
+  .menu-page {
+    font-family: var(--font-sans);
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+    padding-bottom: 120px;
+  }
 
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 300;
-            letter-spacing: 2px;
-        }
+  /* Menu Hero */
+  .menu-hero {
+    background: linear-gradient(135deg, #1c1917 0%, #292524 100%);
+    padding: 80px 24px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .menu-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(217, 119, 6, 0.12) 0%, transparent 50%);
+  }
+  .menu-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .menu-hero-label {
+    display: inline-block;
+    color: var(--color-accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .menu-hero h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(36px, 6vw, 52px);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+  .menu-hero h1 em {
+    font-style: italic;
+    color: var(--color-accent);
+  }
+  .menu-hero p {
+    color: #a8a29e;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.6;
+  }
 
-        header p {
-            margin-top: 0.5rem;
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
+  /* Filters */
+  .filters-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 0;
+  }
+  .filters {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    padding: 10px 24px;
+    border-radius: 50px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .filter-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-1px);
+  }
+  .filter-btn.active {
+    background: var(--color-text);
+    color: #fff;
+    border-color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+  }
+  [data-theme="dark"] .filter-btn.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #1c1917;
+  }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
+  /* Menu Grid */
+  .menu-grid-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 28px;
+  }
 
-        .loading, .error, .empty {
-            text-align: center;
-            padding: 3rem;
-            color: #6b9080;
-        }
+  /* Menu Card */
+  .menu-item {
+    background: var(--color-surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+  }
+  .menu-item:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: transparent;
+  }
+  .menu-img {
+    height: 220px;
+    background: linear-gradient(135deg, var(--color-sage-light) 0%, #e7e5e4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .menu-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .menu-item:hover .menu-img img {
+    transform: scale(1.05);
+  }
+  .menu-img-overlay {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .menu-content {
+    padding: 28px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 12px;
+  }
+  .menu-header h3 {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.3;
+    margin: 0;
+  }
+  .price {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-accent);
+    white-space: nowrap;
+  }
+  .tags {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
 
-        .error {
-            color: #c0392b;
-        }
+  /* Quantity Control */
+  .qty-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 8px;
+    background: var(--color-sage-light);
+    border-radius: var(--radius-sm);
+  }
+  .qty-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .qty-btn:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #fff;
+    transform: scale(1.05);
+  }
+  .qty-btn:active {
+    transform: scale(0.95);
+  }
+  .qty-input {
+    width: 48px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .qty-input::-webkit-outer-spin-button,
+  .qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 
-        .category {
-            margin-bottom: 2.5rem;
-        }
+  /* Add Button */
+  .add-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--color-text);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: auto;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .add-btn:hover {
+    background: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(217, 119, 6, 0.25);
+  }
+  .add-btn:disabled {
+    opacity: 0.7;
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+  }
+  .add-btn svg {
+    width: 18px;
+    height: 18px;
+  }
 
-        .category-title {
-            font-size: 1.3rem;
-            color: #2d6a4f;
-            border-bottom: 2px solid #95d5b2;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-            text-transform: capitalize;
-        }
+  /* Status Messages */
+  .menu-status {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--color-text-muted);
+  }
+  .menu-status.error {
+    color: #dc2626;
+  }
+  .menu-status h3 {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: var(--color-text);
+  }
+  .menu-status p {
+    font-size: 15px;
+    line-height: 1.6;
+  }
 
-        .menu-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid #e8f5e9;
-            transition: background-color 0.2s;
-            flex-wrap: wrap;
-        }
+  /* Skeleton Loading */
+  .skeleton-card {
+    background: var(--color-surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+  .skeleton-img {
+    height: 220px;
+    background: linear-gradient(90deg, var(--color-sage-light) 25%, #e7e5e4 50%, var(--color-sage-light) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  .skeleton-body {
+    padding: 28px;
+  }
+  .skeleton-line {
+    height: 16px;
+    background: linear-gradient(90deg, var(--color-sage-light) 25%, #e7e5e4 50%, var(--color-sage-light) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .skeleton-line.short { width: 40%; }
+  .skeleton-line.medium { width: 70%; }
+  .skeleton-line.long { width: 100%; height: 48px; margin-top: 20px; border-radius: var(--radius-sm); }
 
-        .menu-item:hover {
-            background-color: #f0fdf4;
-            padding-left: 1rem;
-            padding-right: 1rem;
-            margin: 0 -1rem;
-            border-radius: 8px;
-        }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
 
-        .item-title {
-            font-weight: 500;
-            color: #1b4332;
-        }
+  /* Floating Cart Bar */
+  .cart-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    backdrop-filter: blur(12px);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(100%);
+  }
+  .cart-bar.visible {
+    transform: translateY(0);
+  }
+  .cart-bar-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .cart-bar-info h3 {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+  }
+  .cart-bar-info span {
+    font-size: 14px;
+    color: var(--color-text-muted);
+  }
+  .cart-bar a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-accent);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.3s;
+  }
+  .cart-bar a:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(217, 119, 6, 0.3);
+  }
+  .cart-bar a svg {
+    width: 18px;
+    height: 18px;
+  }
 
-        .item-title a {
-            color: #1b4332;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
+  /* Responsive */
+  @media (max-width: 640px) {
+    .menu-hero { padding: 60px 20px 40px; }
+    .menu-grid { grid-template-columns: 1fr; gap: 20px; }
+    .menu-grid-container { padding: 24px 20px; }
+    .filters-container { padding: 24px 20px 0; }
+    .cart-bar { padding: 16px 20px; }
+    .cart-bar-info h3 { font-size: 18px; }
+    .cart-bar a { padding: 10px 20px; font-size: 14px; }
+  }
+</style>
 
-        .item-title a:hover {
-            color: #2d6a4f;
-            text-decoration: underline;
-        }
-
-        .item-price {
-            font-weight: 600;
-            color: #2d6a4f;
-            font-size: 1.1rem;
-            white-space: nowrap;
-            margin-left: 1rem;
-        }
-
-        .dots {
-            flex: 1;
-            border-bottom: 1px dotted #b7e4c7;
-            margin: 0 1rem;
-            position: relative;
-            top: -4px;
-        }
-
-        /* Wraps quantity input + button together on the right side */
-        .item-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-left: 1rem;
-        }
-
-        .qty-input {
-            width: 3rem;
-            padding: 0.3rem;
-            text-align: center;
-            border: 1px solid #b7e4c7;
-            border-radius: 4px;
-            font-size: 0.95rem;
-            color: #1a472a;
-        }
-
-        .qty-input:focus {
-            outline: none;
-            border-color: #2d6a4f;
-        }
-
-        /* Modern circular "+" button */
-        .add-btn {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            border-radius: 50%;
-            border: none;
-            background-color: #2d6a4f;
-            color: white;
-            font-size: 1.3rem;
-            line-height: 1;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-
-        .add-btn:hover {
-            background-color: #1b4332;
-        }
-
-        .add-btn:active {
-            transform: scale(0.92);
-        }
-
-        .add-btn:disabled {
-            background-color: #95d5b2;
-            cursor: not-allowed;
-        }
-
-        .add-feedback {
-            font-size: 0.8rem;
-            white-space: nowrap;
-            min-width: 3.5rem;
-        }
-
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: #74c69d;
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 1.8rem;
-            }
-            .menu-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-            .dots {
-                display: none;
-            }
-            .item-price {
-                margin-left: 0;
-            }
-            .item-actions {
-                margin-left: 0;
-            }
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Little Lemon</h1>
-        <p>Fresh & Simple</p>
-    </header>
-
-    <div class="container" id="menu-container">
-        <div class="loading">Loading menu...</div>
+<div class="menu-page">
+  <!-- Menu Hero -->
+  <div class="menu-hero">
+    <div class="menu-hero-content">
+      <div class="menu-hero-label">Our Selection</div>
+      <h1>Explore Our <em>Menu</em></h1>
+      <p>Handcrafted dishes made with fresh, locally-sourced ingredients.</p>
     </div>
+  </div>
 
-    <footer>
-        &copy; 2026 Little Lemon
-    </footer>
+  <!-- Filters -->
+  <div class="filters-container">
+    <div class="filters" id="filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="starters">Starters</button>
+      <button class="filter-btn" data-filter="mains">Mains</button>
+      <button class="filter-btn" data-filter="desserts">Desserts</button>
+    </div>
+  </div>
 
-    <script>
-        async function fetchMenu() {
-            const container = document.getElementById('menu-container');
+  <!-- Menu Grid -->
+  <div class="menu-grid-container">
+    <div class="menu-grid" id="menu-grid">
+      <!-- Skeleton loading state -->
+      <div class="skeleton-card">
+        <div class="skeleton-img"></div>
+        <div class="skeleton-body">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line long"></div>
+        </div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-img"></div>
+        <div class="skeleton-body">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line long"></div>
+        </div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-img"></div>
+        <div class="skeleton-body">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line long"></div>
+        </div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-img"></div>
+        <div class="skeleton-body">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line long"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            try {
-                const response = await fetch('http://127.0.0.1:8000/api/menu');
+  <!-- Cart Bar -->
+  <div class="cart-bar" id="cart-bar">
+    <div class="cart-bar-info">
+      <h3>$<span id="cart-total">0.00</span></h3>
+      <span><span id="cart-count">0</span> items</span>
+    </div>
+    <a href="http://127.0.0.1:8000/order-confirmation/">
+      View Order
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
+  </div>
+</div>
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+<script>
+  const API_BASE = 'http://127.0.0.1:8000';
+  const token = localStorage.getItem('access_token') || localStorage.getItem('access');
 
-                const data = await response.json();
-                renderMenu(data, container);
-            } catch (err) {
-                container.innerHTML = `
-                    <div class="error">
-                        <p>Unable to load menu.</p>
-                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">${err.message}</p>
-                        <button onclick="fetchMenu()" style="margin-top: 1rem; padding: 0.5rem 1.5rem; background: #2d6a4f; color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button>
-                    </div>
-                `;
-            }
+  let menuData = [];
+  let currentFilter = 'all';
+
+  function getCategoryName(item) {
+    const category = item.category;
+    if (category && typeof category === 'object') return category.title || category.name || '';
+    return category || '';
+  }
+
+  function getCategoryEmoji(category) {
+    const cat = (category || '').toString().toLowerCase();
+    if (cat.includes('starter')) return '🧆';
+    if (cat.includes('main')) return '🍗';
+    if (cat.includes('dessert')) return '🍯';
+    if (cat.includes('fruit')) return '🍎';
+    if (cat.includes('algerian')) return '🥘';
+    if (cat.includes('american')) return '🍔';
+    if (cat.includes('japanese')) return '🍣';
+    if (cat.includes('mexican')) return '🌮';
+    if (cat.includes('italy') || cat.includes('italian')) return '🍝';
+    return '🍽️';
+  }
+
+  function clampQuantity(input) {
+    let value = parseInt(input.value, 10);
+    if (isNaN(value) || value < 1) value = 1;
+    input.value = value;
+    return value;
+  }
+
+  async function fetchMenu() {
+    const grid = document.getElementById('menu-grid');
+    try {
+      const response = await fetch(`${API_BASE}/api/menu`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
+      });
 
-        function renderMenu(items, container) {
-            if (!items || items.length === 0) {
-                container.innerHTML = '<div class="empty">No items available.</div>';
-                return;
-            }
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
 
-            // Group items by category
-            const grouped = items.reduce((acc, item) => {
-                const cat = item.category_name || 'Other';
-                if (!acc[cat]) acc[cat] = [];
-                acc[cat].push(item);
-                return acc;
-            }, {});
+      const data = await response.json();
+      menuData = Array.isArray(data) ? data : (data.results || []);
+      renderMenu(currentFilter);
+    } catch (err) {
+      console.error('Error fetching menu:', err);
+      grid.innerHTML = `
+        <div class="menu-status error">
+          <h3>Unable to load menu</h3>
+          <p>Please check your connection and try again later.</p>
+        </div>
+      `;
+    }
+  }
 
-            let html = '';
+  function renderMenu(filter = "all") {
+    currentFilter = filter;
+    const grid = document.getElementById('menu-grid');
 
-            for (const [category, categoryItems] of Object.entries(grouped)) {
-                html += `<div class="category">
-                    <div class="category-title">${escapeHtml(category)}</div>`;
+    const filtered = menuData.filter(item => {
+      if (filter === "all") return true;
+      return getCategoryName(item).toString().toLowerCase().includes(filter);
+    });
 
-                for (const item of categoryItems) {
-                    const itemUrl = `/menu/${item.id}/`;
-                    html += `
-                        <div class="menu-item">
-                            <span class="item-title">
-                                <a href="${escapeHtml(itemUrl)}">${escapeHtml(item.title)}</a>
-                            </span>
-                            <span class="dots"></span>
-                            <span class="item-price">$${formatPrice(item.price)}</span>
-                            <div class="item-actions">
-                                <input
-                                    type="number"
-                                    class="qty-input"
-                                    min="1"
-                                    step="1"
-                                    value="1"
-                                    data-item-id="${item.id}"
-                                    aria-label="Quantity for ${escapeHtml(item.title)}"
-                                >
-                                <button
-                                    class="add-btn"
-                                    type="button"
-                                    data-item-id="${item.id}"
-                                    aria-label="Add ${escapeHtml(item.title)} to cart"
-                                >+</button>
-                                <span class="add-feedback" data-feedback-for="${item.id}"></span>
-                            </div>
-                        </div>
-                    `;
-                }
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div class="menu-status">
+          <h3>No items found</h3>
+          <p>Try selecting a different category or check back soon.</p>
+        </div>
+      `;
+      return;
+    }
 
-                html += '</div>';
-            }
+    grid.innerHTML = filtered.map(item => {
+      const name = item.title || item.name || 'Untitled';
+      const price = parseFloat(item.price) || 0;
+      const tags = item.tags || '';
+      const category = getCategoryName(item);
+      const emoji = getCategoryEmoji(category);
 
-            container.innerHTML = html;
+      return `
+        <div class="menu-item">
+          <div class="menu-img">
+            ${item.image ? `<img src="${item.image}" alt="${name}" loading="lazy">` : emoji}
+            ${category ? `<span class="menu-img-overlay">${category}</span>` : ''}
+          </div>
+          <div class="menu-content">
+            <div class="menu-header">
+              <h3>${name}</h3>
+              <span class="price">$${price.toFixed(2)}</span>
+            </div>
+            <p class="tags">${tags}</p>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" data-action="decrease" data-id="${item.id}" aria-label="Decrease quantity">−</button>
+              <input type="number" class="qty-input" id="qty-${item.id}" data-id="${item.id}" value="1" min="1" step="1" inputmode="numeric" aria-label="Quantity">
+              <button type="button" class="qty-btn" data-action="increase" data-id="${item.id}" aria-label="Increase quantity">+</button>
+            </div>
+            <button class="add-btn" data-id="${item.id}" data-price="${price}">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add to Order
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function addToCart(itemId, price, quantity, button) {
+    const originalHTML = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = `
+      <svg class="spinner" style="width: 18px; height: 18px; animation: spin 1s linear infinite;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="4"></circle>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+      Adding...
+    `;
+
+    try {
+      const response = await fetch(`${API_BASE}/api/cart-items/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          item: itemId,
+          quantity: quantity
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      await refreshCart();
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      alert('Could not add this item to your cart. Please try again.');
+    } finally {
+      button.disabled = false;
+      button.innerHTML = originalHTML;
+    }
+  }
+
+  async function refreshCart() {
+    try {
+      const response = await fetch(`${API_BASE}/api/cart-items/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
+      });
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
 
-        function formatPrice(price) {
-            const num = parseFloat(price);
-            return isNaN(num) ? price : num.toFixed(2);
-        }
+      const data = await response.json();
+      const items = Array.isArray(data) ? data : (data.results || []);
 
-        // Reads the auth token, checking both possible localStorage keys
-        function getAuthToken() {
-            return localStorage.getItem('access_token') || localStorage.getItem('access');
-        }
+      const count = items.reduce((sum, ci) => sum + (parseInt(ci.quantity, 10) || 0), 0);
+      const total = items.reduce((sum, ci) => {
+        const unitPrice = parseFloat(ci.price_at_time ?? ci.price ?? ci.item?.price ?? 0) || 0;
+        const qty = parseInt(ci.quantity, 10) || 0;
+        return sum + (unitPrice * qty);
+      }, 0);
 
-        // Sends the POST request to add an item to the cart
-        async function addToCart(itemId, quantity, buttonEl, feedbackEl) {
-            const token = getAuthToken();
+      document.getElementById('cart-count').innerText = count;
+      document.getElementById('cart-total').innerText = total.toFixed(2);
 
-            if (!token) {
-                feedbackEl.textContent = 'Please log in';
-                feedbackEl.style.color = '#c0392b';
-                return;
-            }
+      const cartBar = document.getElementById('cart-bar');
+      if (count > 0) {
+        cartBar.classList.add('visible');
+      } else {
+        cartBar.classList.remove('visible');
+      }
 
-            // Disable the button while the request is in flight to prevent double-clicks
-            buttonEl.disabled = true;
-            feedbackEl.textContent = '';
+      return { count, total };
+    } catch (err) {
+      console.error('Error fetching cart:', err);
+    }
+  }
 
-            try {
-                const response = await fetch('http://127.0.0.1:8000/api/cart-items/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        item: itemId,
-                        quantity: quantity
-                    })
-                });
+  document.getElementById('menu-grid').addEventListener('click', (e) => {
+    if (e.target.closest('.add-btn')) {
+      const btn = e.target.closest('.add-btn');
+      const itemId = btn.dataset.id;
+      const price = parseFloat(btn.dataset.price);
+      const qtyInput = document.getElementById(`qty-${itemId}`);
+      const quantity = clampQuantity(qtyInput);
+      addToCart(itemId, price, quantity, btn);
+      return;
+    }
 
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.detail || `HTTP ${response.status}`);
-                }
+    if (e.target.closest('.qty-btn')) {
+      const btn = e.target.closest('.qty-btn');
+      const itemId = btn.dataset.id;
+      const qtyInput = document.getElementById(`qty-${itemId}`);
+      let value = clampQuantity(qtyInput);
+      if (btn.dataset.action === 'increase') {
+        value += 1;
+      } else if (btn.dataset.action === 'decrease') {
+        value = Math.max(1, value - 1);
+      }
+      qtyInput.value = value;
+    }
+  });
 
-                feedbackEl.textContent = 'Added!';
-                feedbackEl.style.color = '#2d6a4f';
-            } catch (err) {
-                feedbackEl.textContent = err.message || 'Failed to add';
-                feedbackEl.style.color = '#c0392b';
-            } finally {
-                buttonEl.disabled = false;
-                // Clear the feedback message after a couple seconds
-                setTimeout(() => { feedbackEl.textContent = ''; }, 2000);
-            }
-        }
+  document.getElementById('menu-grid').addEventListener('change', (e) => {
+    if (e.target.classList.contains('qty-input')) {
+      clampQuantity(e.target);
+    }
+  });
 
-        // Event delegation: one listener handles clicks on any "+" button,
-        // including ones rendered dynamically after this listener is attached.
-        document.getElementById('menu-container').addEventListener('click', (event) => {
-            const button = event.target.closest('.add-btn');
-            if (!button) return; // click wasn't on a "+" button
+  document.getElementById('filters').addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON') {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      e.target.classList.add('active');
+      renderMenu(e.target.dataset.filter);
+    }
+  });
 
-            const itemId = parseInt(button.dataset.itemId, 10);
-            const qtyInput = document.querySelector(`.qty-input[data-item-id="${itemId}"]`);
-            const feedbackEl = document.querySelector(`.add-feedback[data-feedback-for="${itemId}"]`);
+  // Add spinner keyframe
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  `;
+  document.head.appendChild(style);
 
-            let quantity = parseInt(qtyInput.value, 10);
-            if (isNaN(quantity) || quantity < 1) {
-                quantity = 1;
-                qtyInput.value = 1;
-            }
-
-            addToCart(itemId, quantity, button, feedbackEl);
-        });
-
-        // Load on page load
-        fetchMenu();
-    </script>
-</body>
-
+  fetchMenu();
+  refreshCart();
+</script>
 {% endblock %}
