@@ -32,19 +32,19 @@ While the curriculum focused on the backend, I integrated a fully functional, mo
 
 ## 📸 Screenshots
 
-*(Replace the placeholders below with the actual file paths to your images in your repository)*
+*(Images are stored in the `/screenshots` folder of this repository)*
 
 | Home Page | Menu Exploration |
 | :---: | :---: |
-| ![Home](screenshots/home.png) | ![Menu](screenshots/menu.png) |
+| <img src="screenshots/home.png" width="400"/> | <img src="screenshots/menu.png" width="400"/> |
 
 | Order History | Basket / Checkout |
 | :---: | :---: |
-| ![Orders](screenshots/orders.png) | ![Basket](screenshots/basket.png) |
+| <img src="screenshots/orders.png" width="400"/> | <img src="screenshots/basket.png" width="400"/> |
 
 | Admin: Add Dish | Admin: Dashboard |
 | :---: | :---: |
-| ![Add Dish](screenshots/add_dish.png) | ![Dashboard](screenshots/dashboard.png) |
+| <img src="screenshots/add_dish.png" width="400"/> | <img src="screenshots/dashboard.png" width="400"/> |
 
 ---
 
