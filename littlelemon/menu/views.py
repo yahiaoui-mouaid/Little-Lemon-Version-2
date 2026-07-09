@@ -3,7 +3,7 @@ from .serializers import MenuSerializer, CategorySerializer, CategoryNameSeriali
 from .models import MenuItems, Category
 from rest_framework import viewsets
 from users.permissions import HasRequiredRole, IsManagerOnly
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 
 # because of DefaultRouter i don't need to create another view for single item view " he creates it for me :) "
@@ -16,7 +16,7 @@ class MenuView(viewsets.ModelViewSet):
     required_roles = ['MANAGER', 'DELIVERY']
 
     # 2. Tell your view to use these parsers
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
 
 class CategoryView(viewsets.ModelViewSet): 
