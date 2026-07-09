@@ -36,15 +36,15 @@ While the curriculum focused on the backend, I integrated a fully functional, mo
 
 | Home Page | Menu Exploration |
 | :---: | :---: |
-| <img src="screenshots/1.png" width="400"/> | <img src="screenshots/2.png" width="400"/> |
+| <img src="1.png" width="400"/> | <img src="2.png" width="400"/> |
 
 | Order History | Basket / Checkout |
 | :---: | :---: |
-| <img src="screenshots/3.png" width="400"/> | <img src="screenshots/4.png" width="400"/> |
+| <img src="3.png" width="400"/> | <img src="4.png" width="400"/> |
 
 | Admin: Add Dish | Admin: Dashboard |
 | :---: | :---: |
-| <img src="screenshots/5.png" width="400"/> | <img src="screenshots/6.png" width="400"/> |
+| <img src="5.png" width="400"/> | <img src="6.png" width="400"/> |
 ---
 
 ## 🛠️ Tech Stack
